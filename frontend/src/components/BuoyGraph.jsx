@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { formatTime } from "../lib/format.js";
+import { fadeInSequence } from "../lib/animations.js";
 import Skeleton from "./Skeleton.jsx";
 
 const W = 400;
@@ -25,7 +26,7 @@ function layout(readings) {
   return { pts, mn, mx, ty: ty > 0 && ty < H ? ty : null };
 }
 
-export default function BuoyGraph({ readings = [], loading = false }) {
+export default function BuoyGraph({ readings = [], loading = false, baseDelay = 0 }) {
   const { pts, ty } = useMemo(() => layout(readings), [readings]);
   const wrapRef = useRef(null);
   const [hover, setHover] = useState(null);
@@ -85,10 +86,11 @@ export default function BuoyGraph({ readings = [], loading = false }) {
                 y2={pts[i + 1].y}
                 stroke="var(--fg4)"
                 strokeWidth="1"
+                style={fadeInSequence(i, { base: baseDelay })}
               />
             ))}
             {showData && ty != null && (
-              <>
+              <g style={fadeInSequence(pts.length + 1, { base: baseDelay })}>
                 <line
                   x1={0}
                   y1={ty}
@@ -108,7 +110,7 @@ export default function BuoyGraph({ readings = [], loading = false }) {
                 >
                   60°F
                 </text>
-              </>
+              </g>
             )}
             {showData && pts.map((p, i) => (
               <circle
@@ -117,6 +119,7 @@ export default function BuoyGraph({ readings = [], loading = false }) {
                 cy={p.y}
                 r={i === pts.length - 1 ? 4 : 3}
                 fill="var(--spark)"
+                style={fadeInSequence(i, { base: baseDelay })}
               />
             ))}
           </svg>
@@ -156,7 +159,7 @@ export default function BuoyGraph({ readings = [], loading = false }) {
             <span
               key={`t-${i}`}
               className={`absolute -translate-x-1/2 whitespace-nowrap ${i === pts.length - 1 ? "font-semibold" : ""}`}
-              style={{ left: `${(p.x / W) * 100}%` }}
+              style={{ left: `${(p.x / W) * 100}%`, ...fadeInSequence(i, { base: baseDelay }) }}
             >
               {p.time}
             </span>

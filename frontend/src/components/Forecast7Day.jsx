@@ -1,3 +1,4 @@
+import { fadeInSequence, SECTION_DELAY } from "../lib/animations.js";
 import Skeleton from "./Skeleton.jsx";
 
 // Absolute swim-temperature scale (not relative to the week's min/max).
@@ -33,9 +34,12 @@ function DayLabel({ children, loading }) {
   );
 }
 
-function DaySquare({ day, water_temp_f, style }) {
+function DaySquare({ day, water_temp_f, style, animStyle }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+    <div
+      className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
+      style={animStyle}
+    >
       <DayLabel>{day}</DayLabel>
       <div
         className="flex aspect-square w-full items-center justify-center border border-line text-[10px] font-medium leading-none"
@@ -57,8 +61,11 @@ function DaySkeleton() {
 }
 
 export default function Forecast7Day({ forecast, loading }) {
-  // Graceful fallback: if the backend hasn't shipped forecast_7day yet, hide.
-  if (!loading && (!Array.isArray(forecast) || forecast.length === 0)) return null;
+  // Graceful fallback: if the backend hasn't shipped forecast_7day yet,
+  // still reserve the same vertical space so the layout doesn't collapse.
+  if (!loading && (!Array.isArray(forecast) || forecast.length === 0)) {
+    return <div className="mb-4 min-h-[92px]" aria-hidden="true" />;
+  }
 
   return (
     <div className="mb-4 min-h-[92px]">
@@ -86,6 +93,7 @@ export default function Forecast7Day({ forecast, loading }) {
                 key={d.date || i}
                 {...d}
                 style={squareStyle(d.water_temp_f)}
+                animStyle={fadeInSequence(i, { step: 45, base: SECTION_DELAY.forecast })}
               />
             ))}
       </div>

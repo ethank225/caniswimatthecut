@@ -1,8 +1,9 @@
+import { fadeInSequence, SECTION_DELAY } from "../lib/animations.js";
 import Skeleton from "./Skeleton.jsx";
 
-function Stat({ value, suffix, label, sublabel }) {
+function Stat({ value, suffix, label, sublabel, animStyle }) {
   return (
-    <div className="flex-1 bg-bg px-2 py-3 text-center">
+    <div className="flex-1 bg-bg px-2 py-3 text-center" style={animStyle}>
       <div className="text-[20px] font-semibold leading-none">
         {value}
         {suffix && <span className="ml-0.5 text-[13px] font-normal text-fg3">{suffix}</span>}
@@ -78,12 +79,14 @@ export default function StatsRow({ weather, loading }) {
         : windCategory(windNow)
       : null;
 
+  const anim = (i) => fadeInSequence(i, { step: 60, base: SECTION_DELAY.stats });
+
   return (
     <div className="mb-6 flex min-h-[76px] gap-px bg-line">
-      <Stat value={air} suffix="°F" label="Air" />
-      <Stat value={windValue} suffix="mph" label="Wind" sublabel={windSub} />
-      <Stat value={uvValue} label="UV" sublabel={uvSub} />
-      <Stat value={rainNextValue} suffix={rainNextSuffix} label="Next 72h" sublabel="rain" />
+      <Stat value={air} suffix="°F" label="Air" animStyle={anim(0)} />
+      <Stat value={windValue} suffix="mph" label="Wind" sublabel={windSub} animStyle={anim(1)} />
+      <Stat value={uvValue} label="UV" sublabel={uvSub} animStyle={anim(2)} />
+      <Stat value={rainNextValue} suffix={rainNextSuffix} label="Next 72h" sublabel="rain" animStyle={anim(3)} />
     </div>
   );
 }

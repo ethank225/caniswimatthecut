@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory } from "../hooks/useHistory.js";
+import { fadeInSequence } from "../lib/animations.js";
 import HoverTip from "./HoverTip.jsx";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -100,6 +101,18 @@ function Legend({ cls, label }) {
   );
 }
 
+// Memoized so parent re-renders from `tip` state changes don't re-render cells.
+const Cell = memo(function Cell({ state, hover, loading, style, onEnter, onLeave }) {
+  return (
+    <div
+      onMouseEnter={(e) => onEnter(e, hover)}
+      onMouseLeave={onLeave}
+      className={cellClasses(state, loading)}
+      style={style}
+    />
+  );
+});
+
 export default function HistoryCalendar() {
   const { data } = useHistory();
   const days = data?.days ?? 90;
@@ -116,7 +129,7 @@ export default function HistoryCalendar() {
     return () => window.removeEventListener("scroll", onScroll, true);
   }, []);
 
-  function onCellEnter(e, hover) {
+  const onCellEnter = useCallback((e, hover) => {
     if (!hover) return;
     const r = e.currentTarget.getBoundingClientRect();
     setTip({
@@ -125,7 +138,15 @@ export default function HistoryCalendar() {
       anchorBottom: r.bottom + 6,
       anchorTop: r.top - 6,
     });
-  }
+  }, []);
+  const onCellLeave = useCallback(() => setTip(null), []);
+
+  // Pre-compute stable style objects. New object identity per render would
+  // defeat React.memo on Cell.
+  const cellStyles = useMemo(
+    () => loading ? null : cells.map((_, i) => fadeInSequence(i, { step: 6, max: 500 })),
+    [loading, cells.length],
+  );
 
   const colsTemplate = `repeat(${weekCount}, minmax(0, 1fr))`;
 
@@ -160,12 +181,15 @@ export default function HistoryCalendar() {
               aspectRatio: `${weekCount} / 7`,
             }}
           >
-            {cells.map((c) => (
-              <div
+            {cells.map((c, i) => (
+              <Cell
                 key={c.key}
-                onMouseEnter={(e) => onCellEnter(e, c.hover)}
-                onMouseLeave={() => setTip(null)}
-                className={cellClasses(c.state, loading)}
+                state={c.state}
+                hover={c.hover}
+                loading={loading}
+                style={cellStyles?.[i]}
+                onEnter={onCellEnter}
+                onLeave={onCellLeave}
               />
             ))}
           </div>

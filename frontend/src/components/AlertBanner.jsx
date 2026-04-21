@@ -32,10 +32,15 @@ export default function AlertBanner({ data }) {
     if (alert && dismissedKey && alert.key !== dismissedKey) setDismissedKey(null);
   }, [alert?.key, dismissedKey]);
 
-  if (!alert || dismissedKey === alert.key) return null;
+  // Always reserve the banner slot so the banner appearing/disappearing
+  // doesn't push every section below. The empty wrapper has no visible
+  // content — just reserved height.
+  if (!alert || dismissedKey === alert.key) {
+    return <div className="mb-6 min-h-[48px]" aria-hidden="true" />;
+  }
 
   return (
-    <div className="mb-6 flex items-center justify-between gap-2 border border-alert-border bg-alert-bg px-3 py-2.5 text-[13px]">
+    <div className="mb-6 flex min-h-[48px] items-center justify-between gap-2 border border-alert-border bg-alert-bg px-3 py-2.5 text-[13px]">
       <span className="text-alert-fg">{alert.text}</span>
       <span className="whitespace-nowrap text-[12px] text-alert-fg2">{alert.time}</span>
       <button

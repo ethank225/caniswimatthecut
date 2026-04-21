@@ -20,9 +20,9 @@ export default function Home() {
     <div className="flex justify-center px-5 pb-20 pt-10">
       <div className="w-full max-w-[440px]">
         <Header />
+        <AlertBanner data={data} />
         <Verdict verdict={data?.verdict} reason={data?.reason} loading={loading} error={error} />
         <Forecast7Day forecast={data?.forecast_7day} loading={loading} />
-        <AlertBanner data={data} />
         <WaterCard water={data?.water} loading={loading} />
         <StatsRow weather={data?.weather} loading={loading} />
         <RainBar weather={data?.weather} loading={loading} />

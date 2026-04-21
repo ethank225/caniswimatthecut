@@ -1,4 +1,5 @@
 import { formatTime } from "../lib/format.js";
+import { fadeInSequence } from "../lib/animations.js";
 import BuoyGraph from "./BuoyGraph.jsx";
 import Skeleton from "./Skeleton.jsx";
 
@@ -9,7 +10,10 @@ export default function WaterCard({ water, loading }) {
     <div className="mb-6 min-h-[212px] border border-line p-4">
       <div className="mb-1 flex items-baseline justify-between">
         <div className="relative text-[36px] font-bold leading-none tracking-[-1px]">
-          <span className={loading ? "invisible" : undefined}>
+          <span
+            className={loading ? "invisible" : undefined}
+            style={loading ? undefined : fadeInSequence(0)}
+          >
             {hasData ? (
               <>
                 {water.temp_f.toFixed(1)}
@@ -26,7 +30,10 @@ export default function WaterCard({ water, loading }) {
           )}
         </div>
         <div className="relative text-right text-[12px] leading-[1.6] text-fg3">
-          <div className={loading ? "invisible" : undefined}>
+          <div
+            className={loading ? "invisible" : undefined}
+            style={loading ? undefined : fadeInSequence(1)}
+          >
             {hasData ? (
               <>
                 ↑ {water.high_f != null ? water.high_f.toFixed(1) : "—"}° high
@@ -51,7 +58,10 @@ export default function WaterCard({ water, loading }) {
       </div>
 
       <div className="relative mb-3 text-[11px] leading-normal text-fg3">
-        <span className={loading ? "invisible" : undefined}>
+        <span
+          className={loading ? "invisible" : undefined}
+          style={loading ? undefined : fadeInSequence(2)}
+        >
           {hasData
             ? `${water?.source || "King Co. buoy"}${water?.last_reading ? ` · last reading ${formatTime(water.last_reading)}` : " · no reading today"}`
             : `${water?.source || "King Co. buoy"} · loading reading`}
@@ -64,7 +74,12 @@ export default function WaterCard({ water, loading }) {
       </div>
 
       <div className="relative mb-1 text-[11px] leading-normal text-fg3">
-        <span className={loading ? "invisible" : undefined}>today · 1m depth</span>
+        <span
+          className={loading ? "invisible" : undefined}
+          style={loading ? undefined : fadeInSequence(3)}
+        >
+          today · 1m depth
+        </span>
         {loading && (
           <div className="pointer-events-none absolute inset-0 flex items-center">
             <Skeleton className="h-[60%] w-32" />
@@ -72,7 +87,7 @@ export default function WaterCard({ water, loading }) {
         )}
       </div>
 
-      <BuoyGraph readings={water?.readings || []} loading={loading} />
+      <BuoyGraph readings={water?.readings || []} loading={loading} baseDelay={140} />
     </div>
   );
 }

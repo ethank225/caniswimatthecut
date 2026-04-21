@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useReports } from "../hooks/useReports.js";
 import { timeAgo } from "../lib/format.js";
+import { fadeInSequence } from "../lib/animations.js";
 import HoverTip from "./HoverTip.jsx";
 import Skeleton from "./Skeleton.jsx";
 
@@ -68,7 +69,26 @@ function tipText(kind, count, cellIndex) {
   return `${time} · ${count} all-clear${count !== 1 ? "s" : ""}`;
 }
 
-function HeatRow({ label, kind, values, onCellEnter, onCellLeave }) {
+// Memoized so re-renders from `tip` state don't re-render any of the 24 cells.
+const HeatCell = memo(function HeatCell({ index, kind, value, style, onEnter, onLeave }) {
+  return (
+    <div
+      onMouseEnter={(e) => onEnter(e, kind, value, index)}
+      onMouseLeave={onLeave}
+      className={`flex aspect-square flex-1 cursor-default items-center justify-center text-[9px] font-medium ${cellClasses(value)}`}
+      style={style}
+    >
+      {value > 0 ? value : ""}
+    </div>
+  );
+});
+
+const HeatRow = memo(function HeatRow({ label, kind, values, onCellEnter, onCellLeave, rowBase = 0 }) {
+  // Pre-compute stable style objects so HeatCell's memo isn't defeated by new refs each render.
+  const styles = useMemo(
+    () => values.map((_, i) => fadeInSequence(i, { step: 14, max: 350, base: rowBase })),
+    [values.length, rowBase],
+  );
   return (
     <div className="mb-[2px] flex items-center gap-2">
       <div className="w-10 shrink-0 text-right text-[9px] uppercase tracking-[0.5px] text-fg3">
@@ -76,19 +96,20 @@ function HeatRow({ label, kind, values, onCellEnter, onCellLeave }) {
       </div>
       <div className="flex flex-1 justify-end gap-[2px]">
         {values.map((v, i) => (
-          <div
+          <HeatCell
             key={i}
-            onMouseEnter={(e) => onCellEnter(e, kind, v, i)}
-            onMouseLeave={onCellLeave}
-            className={`flex aspect-square flex-1 cursor-default items-center justify-center text-[9px] font-medium ${cellClasses(v)}`}
-          >
-            {v > 0 ? v : ""}
-          </div>
+            index={i}
+            kind={kind}
+            value={v}
+            style={styles[i]}
+            onEnter={onCellEnter}
+            onLeave={onCellLeave}
+          />
         ))}
       </div>
     </div>
   );
-}
+});
 
 function HeatRowSkeleton({ label }) {
   return (
@@ -104,7 +125,8 @@ function HeatRowSkeleton({ label }) {
 export default function CopsAtTheCut() {
   const { data } = useReports();
   const loading = data === null;
-  const { cops, clears, totalCops, totalClear, status } = summarize(data);
+  // Stable refs so HeatRow's memo can skip re-renders when `tip` changes.
+  const { cops, clears, totalCops, totalClear, status } = useMemo(() => summarize(data), [data]);
   const [tip, setTip] = useState(null);
 
   useEffect(() => {
@@ -113,7 +135,7 @@ export default function CopsAtTheCut() {
     return () => window.removeEventListener("scroll", onScroll, true);
   }, []);
 
-  function onCellEnter(e, kind, count, cellIndex) {
+  const onCellEnter = useCallback((e, kind, count, cellIndex) => {
     const r = e.currentTarget.getBoundingClientRect();
     setTip({
       text: tipText(kind, count, cellIndex),
@@ -121,10 +143,8 @@ export default function CopsAtTheCut() {
       anchorBottom: r.bottom + 6,
       anchorTop: r.top - 6,
     });
-  }
-  function onCellLeave() {
-    setTip(null);
-  }
+  }, []);
+  const onCellLeave = useCallback(() => setTip(null), []);
 
   return (
     <div className="mb-6 min-h-[160px]">
@@ -142,9 +162,12 @@ export default function CopsAtTheCut() {
           </>
         ) : (
           <>
-            <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.active ? "bg-fg" : "bg-fg4"}`} />
-            <span className="text-[14px] font-medium">{status.text}</span>
-            <span className="ml-auto text-[11px] text-fg3">{status.ago}</span>
+            <div
+              className={`h-2.5 w-2.5 shrink-0 rounded-full ${status.active ? "bg-fg" : "bg-fg4"}`}
+              style={fadeInSequence(0)}
+            />
+            <span className="text-[14px] font-medium" style={fadeInSequence(1)}>{status.text}</span>
+            <span className="ml-auto text-[11px] text-fg3" style={fadeInSequence(2)}>{status.ago}</span>
           </>
         )}
       </div>
@@ -162,6 +185,7 @@ export default function CopsAtTheCut() {
             values={cops}
             onCellEnter={onCellEnter}
             onCellLeave={onCellLeave}
+            rowBase={120}
           />
           <HeatRow
             label="clear"
@@ -169,6 +193,7 @@ export default function CopsAtTheCut() {
             values={clears}
             onCellEnter={onCellEnter}
             onCellLeave={onCellLeave}
+            rowBase={220}
           />
         </>
       )}
