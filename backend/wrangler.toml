@@ -1,0 +1,10 @@
+name = "caniswimatthecut-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[kv_namespaces]]
+binding = "SWIM_DATA"
+id = "3ac1aaf27ec44b078597f542772fe60f"

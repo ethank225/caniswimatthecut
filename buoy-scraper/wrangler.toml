@@ -1,0 +1,10 @@
+name = "buoy-scraper"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Secrets (set via `wrangler secret put SUPABASE_URL` and `wrangler secret put SUPABASE_SERVICE_KEY`)
+# SUPABASE_URL:         https://<project-ref>.supabase.co
+# SUPABASE_SERVICE_KEY: service role key — bypasses RLS, keep secret

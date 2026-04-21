@@ -1,0 +1,50 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Cloudflare Wrangler local state
+.wrangler/
+
+# Vite
+.vite/
+
+# Logs
+*.log
+
+# Test artifacts
+coverage/
+
+# Local secrets — never commit
+.dev.vars
+.backfill.env
+*.env
+.env.local
+node_modules/
+
+# Vite env files (all variants)
+.env
+.env.*
+!.env.example
+!.env.*.example
